@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Food Assistant — Team Dinner Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,800&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1c1714;--paper:#f4ece0;--card:#fffdf8;--line:#ddd0bd;--accent:#b5471f;--accent2:#1f6f6b;--gold:#a9802f;--muted:#6f6457;--bar:#1f6f6b;
+--lowR:#1f6f6b;--medR:#a9802f;--highR:#9d3b22;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans Thai",sans-serif;line-height:1.6;background-image:radial-gradient(circle at 15% -10%,rgba(181,71,31,.07),transparent 40%),radial-gradient(circle at 100% 0,rgba(31,111,107,.06),transparent 35%)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+h1,h2,h3,.den,.badge,.bigstat{font-family:"Fraunces",serif}
+.mono{font-family:"IBM Plex Mono",monospace}
+header.hero{padding:54px 0 30px;border-bottom:2px solid var(--ink)}
+.kicker{letter-spacing:.22em;text-transform:uppercase;font-size:12px;color:var(--accent);font-weight:700}
+.hero h1{font-size:clamp(36px,6.5vw,70px);line-height:1.02;font-weight:800;margin:8px 0}
+.hero .sub{font-size:17px;color:var(--muted);max-width:64ch}
+.pipeline{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}
+.pipeline span{font-size:11.5px;font-weight:600;background:var(--card);border:1.5px solid var(--ink);border-radius:8px;padding:4px 9px}
+.pipeline span:after{content:" →";color:var(--accent)}.pipeline span:last-child:after{content:""}
+.areabar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:22px}
+.areabar .lbl{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--muted)}
+.area{font-family:inherit;font-size:14px;font-weight:600;border:1.5px solid var(--ink);border-radius:999px;padding:7px 14px;background:var(--card);cursor:pointer}
+.area.on{background:var(--ink);color:var(--paper)}
+.area .mk{font-size:10px;opacity:.7}
+.livebadge{font-size:11px;font-weight:700;border-radius:6px;padding:3px 8px;border:1.5px solid var(--ink)}
+.livebadge.live{background:#1f6f6b;color:#fff}.livebadge.mock{background:#e7dccb}
+section{padding:40px 0}
+.eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:22px}.eyebrow h2{font-size:27px;font-weight:600}.eyebrow .rule{flex:1;height:2px;background:var(--line)}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat{background:var(--card);border:1.5px solid var(--ink);border-radius:14px;padding:16px 18px;box-shadow:4px 4px 0 var(--ink)}
+.stat .bigstat{font-size:34px;font-weight:800;color:var(--accent2)}
+.stat small{color:var(--muted);font-size:12.5px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.tab{font-family:inherit;font-size:13.5px;font-weight:600;border:1.5px solid var(--ink);border-radius:10px;padding:8px 14px;background:var(--card);cursor:pointer}
+.tab.on{background:var(--accent);color:#fff}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--card);border:1.5px solid var(--ink);border-radius:16px;padding:22px;position:relative;box-shadow:6px 6px 0 var(--ink)}
+.card .badge{position:absolute;top:-13px;left:18px;background:var(--gold);color:#fff;font-weight:800;padding:3px 13px;border-radius:999px;font-size:13px;border:1.5px solid var(--ink)}
+.card:nth-child(1) .badge{background:var(--accent)}
+.card h3{font-size:21px;margin-top:8px;line-height:1.15}.card .cat{color:var(--muted);font-size:13px;margin-bottom:8px}
+.card .score{display:flex;align-items:baseline;gap:6px;margin:6px 0 12px}.card .num{font-size:40px;font-weight:800;font-family:"Fraunces";color:var(--accent2)}.card .den{color:var(--muted);font-size:14px}
+.card .stats{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0;margin-bottom:10px}
+.card .stats b{display:block;font-size:15px}.card .stats span{font-size:10.5px;color:var(--muted)}
+.tagrow{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}
+.chip{font-size:11px;border-radius:6px;padding:2px 8px;border:1px solid var(--line)}
+.chip.pro{background:#e6f0ef}.chip.con{background:#f6e7df}
+.flagrow{display:flex;gap:6px;align-items:center;margin-top:8px;font-size:11.5px}
+.rdot{width:9px;height:9px;border-radius:50%;display:inline-block;border:1px solid var(--ink)}
+.rdot.low{background:var(--lowR)}.rdot.med{background:var(--medR)}.rdot.high{background:var(--highR)}
+.hr-flag{background:var(--gold);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:6px;border:1px solid var(--ink)}
+.card .why,.card .trade{font-size:13px;margin-top:7px}.card .trade{color:#8a3a1e}
+.askwrap{background:var(--card);border:1.5px solid var(--ink);border-radius:16px;padding:22px;box-shadow:6px 6px 0 var(--ink)}
+.askrow{display:flex;gap:8px}.askrow input{flex:1;font-family:inherit;font-size:15px;padding:11px 14px;border:1.5px solid var(--ink);border-radius:10px;background:var(--paper)}
+.askrow button{font-family:inherit;font-weight:700;font-size:15px;padding:11px 20px;border:1.5px solid var(--ink);border-radius:10px;background:var(--accent);color:#fff;cursor:pointer}
+.samples{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.samples b{font-size:11px;color:var(--muted);align-self:center}
+.samp{font-size:12px;border:1px dashed var(--ink);border-radius:8px;padding:4px 10px;background:var(--paper);cursor:pointer}
+.answer{margin-top:16px;border-top:1px solid var(--line);padding-top:14px;font-size:14.5px;display:none}
+.answer.show{display:block}.answer .a-lead{font-weight:600;margin-bottom:8px}
+.answer ol{margin:6px 0 0 18px}.answer li{margin:3px 0}
+.grounded{font-size:11.5px;color:var(--muted);margin-top:10px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:center}
+.controls input,.controls select{font-family:inherit;font-size:13.5px;padding:8px 11px;border:1.5px solid var(--ink);border-radius:10px;background:var(--card)}
+.controls input.search{flex:1;min-width:180px}.controls label{font-size:12.5px;color:var(--muted)}
+.tablewrap{overflow-x:auto;border:1.5px solid var(--ink);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:900px}
+th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{background:var(--ink);color:var(--paper);cursor:pointer;user-select:none;font-weight:600;position:sticky;top:0;font-size:12px}
+tbody tr:hover{background:#faf3e6}
+td.name{white-space:normal;min-width:160px;font-weight:600}td.cat{color:var(--muted);white-space:normal;font-size:12px}
+.rankcell{font-weight:800;font-family:"Fraunces"}.top .rankcell{color:var(--accent)}
+.topflag{display:inline-block;background:var(--gold);color:#fff;font-size:9.5px;font-weight:800;padding:1px 6px;border-radius:5px;margin-left:5px}
+.totbar{display:flex;align-items:center;gap:7px;min-width:110px}.totbar .t{height:9px;background:#e7dccb;border:1px solid var(--ink);border-radius:6px;flex:1;overflow:hidden}.totbar .f{height:100%;background:var(--bar)}.totbar b{font-variant-numeric:tabular-nums;width:34px;text-align:right}
+.confcell{font-variant-numeric:tabular-nums}
+.riskpill{font-size:11px;font-weight:700;border-radius:6px;padding:1px 8px;border:1px solid var(--ink)}
+.riskpill.low{background:#e6f0ef;color:#155}.riskpill.med{background:#f5ead2;color:#6b4e12}.riskpill.high{background:#f6ddd2;color:#7a2c14}
+.pill{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.mockoverlay{display:none;background:var(--card);border:1.5px dashed var(--ink);border-radius:16px;padding:40px;text-align:center;color:var(--muted)}
+.mockoverlay h3{font-size:22px;color:var(--ink);margin-bottom:8px}
+footer{padding:36px 0 70px;border-top:2px solid var(--ink);margin-top:24px;font-size:13px;color:var(--muted)}footer b{color:var(--ink)}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}.card{animation:rise .5s both}
+@media(max-width:860px){.cards,.statgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.cards,.statgrid{grid-template-columns:1fr}}
+.byline{margin-top:10px;font-size:14px;color:var(--muted)}.byline b{color:var(--ink)}
+.flow{list-style:none;counter-reset:f;display:grid;gap:9px}
+.flow li{counter-increment:f;position:relative;padding-left:42px;font-size:14.5px;min-height:30px;display:flex;align-items:center}
+.flow li:before{content:counter(f);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:8px;background:var(--ink);color:var(--paper);font-family:"Fraunces";font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
+.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tool{background:var(--card);border:1.5px solid var(--ink);border-radius:12px;padding:14px 16px;box-shadow:4px 4px 0 var(--ink)}
+.tool b{display:block;font-size:16px}.tool span{font-size:12.5px;color:var(--muted)}
+.srclist{list-style:none;display:grid;gap:8px;font-size:14.5px}
+.srclist a{color:var(--accent2);font-weight:600}.srclist a.ph{color:var(--accent);text-decoration:underline dashed}
+@media(max-width:700px){.toolgrid{grid-template-columns:1fr 1fr}}
+</style></head>
+<body>
+<header class="hero"><div class="wrap">
+  <div class="kicker">AI Workflow · Grounded Recommender</div>
+  <h1>Team Dinner Finder</h1>
+  <p class="sub">ผู้ช่วย AI หาร้านอาหารสำหรับทีม 8–12 คน จากข้อมูลจริงที่ scrape มา → scoring 100 คะแนน → แนะนำตาม scenario + AI Ask Box ที่ตอบจาก dataset เท่านั้น</p>
+  <p class="byline">โดย <b>Phongphan (Por)</b> &nbsp;·&nbsp; พื้นที่: อารีย์ (Ari), กรุงเทพฯ &nbsp;·&nbsp; 6 มิ.ย. 2026</p>
+  <div class="pipeline"><span>Apify Scraper</span><span>Google Sheets</span><span>AI Enrichment</span><span>Scoring Model</span><span>Grounded AI</span></div>
+  <div class="areabar">
+    <span class="lbl">AREA:</span>
+    <button class="area on" data-a="ari">🌿 อารีย์</button>
+    <button class="area" data-a="asok">🏙 อโศก</button>
+    <button class="area" data-a="siam">🏬 สยาม</button>
+    <button class="area" data-a="thonglor">🍷 ทองหล่อ</button>
+    <button class="area" data-a="phrompong">💎 พร้อมพงษ์</button>
+    <span id="livebadge" class="livebadge live">● LIVE DATA</span>
+  </div>
+</div></header>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>Objective</h2><div class="rule"></div></div>
+  <p style="font-size:15px;max-width:82ch">ถ้าทีม 8–12 คน ต้องเลือกร้านมื้อเย็นหลังเลิกงาน <b>1–3 ร้านในย่านอารีย์</b> — ร้านไหนเหมาะที่สุดและเพราะอะไร ตัดสินจาก<b>ข้อมูลจริง + รีวิวจริง</b>ที่ตรวจย้อนกลับได้ ผ่านโมเดลให้คะแนน 100 คะแนน 6 มิติ</p>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>Workflow Overview</h2><div class="rule"></div></div>
+  <ol class="flow">
+    <li><b>Data Collection</b> — Apify (Google Maps) + Browse AI (Wongnai) → 72 + 100 ร้าน</li>
+    <li><b>Storage</b> — Google Sheets (แยก raw / clean ชัดเจน)</li>
+    <li><b>Cleaning</b> — dedup, normalize ราคา→ต่อหัว, กรองรัศมี ≤1.5km จาก BTS อารีย์, cross-check 2 แหล่ง</li>
+    <li><b>Scoring + AI Analysis</b> — โมเดล 100 คะแนน 6 มิติ + AI อ่านรีวิวจริงให้คะแนน Group/Uniqueness (sentiment)</li>
+    <li><b>Automation</b> — n8n Webhook API คืน Top 3 เป็น JSON (รันจริง)</li>
+    <li><b>Output</b> — HTML หน้าเดียว (area selector · 5 scenario · Grounded AI Ask Box)</li>
+  </ol>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>Tools Used</h2><div class="rule"></div></div>
+  <div class="toolgrid">
+    <div class="tool"><b>Apify</b><span>scrape Google Maps (compass/crawler-google-places)</span></div>
+    <div class="tool"><b>Browse AI</b><span>scrape Wongnai (directory ย่านอารีย์)</span></div>
+    <div class="tool"><b>Google Sheets</b><span>เก็บ raw + clean + scoring</span></div>
+    <div class="tool"><b>Claude</b><span>clean, scoring, AI analysis, build</span></div>
+    <div class="tool"><b>n8n</b><span>automation (Webhook → Top 3)</span></div>
+    <div class="tool"><b>HTML / CSS / JS</b><span>single-page output (vanilla)</span></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>Data Sources <span style="font-size:13px;color:var(--muted);font-weight:400">— 2 แหล่ง ตรวจย้อนกลับได้</span></h2><div class="rule"></div></div>
+  <ul class="srclist">
+    <li><b>1. Google Maps</b> — ร้านอาหารย่านอารีย์ (72 ร้าน) · <a href="https://www.google.com/maps/search/ร้านอาหาร+อารีย์+กรุงเทพ" target="_blank">เปิดแหล่งข้อมูล ↗</a></li>
+    <li><b>2. Wongnai</b> — directory ร้านอาหารย่านอารีย์ (100 ร้าน) · <a href="https://www.wongnai.com/restaurants?regions=242" target="_blank">เปิดแหล่งข้อมูล ↗</a></li>
+  </ul>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>Evidence</h2><div class="rule"></div></div>
+  <ul class="srclist">
+    <li><b>Google Sheet (raw + clean + scoring):</b> <a href="#" target="_blank" class="ph">ใส่ลิงก์หลังอัปขึ้น Drive ↗</a></li>
+    <li><b>Apify scraping run / dataset:</b> <a href="#" target="_blank" class="ph">ใส่ลิงก์ Apify run ↗</a></li>
+    <li><b>Browse AI run:</b> <a href="#" target="_blank" class="ph">ใส่ลิงก์ Browse AI ↗</a></li>
+    <li><b>n8n Automation (production webhook):</b> <a href="https://n8n-external.exservice.io/webhook/team-dinner-ari?area=ari&scenario=team" target="_blank">/webhook/team-dinner-ari ↗</a></li>
+  </ul>
+  <p style="font-size:12.5px;color:var(--muted);margin-top:8px">⚠️ ลิงก์ที่ขึ้น "ใส่ลิงก์…" ให้แก้เป็นลิงก์จริงของพี่ก่อนส่ง (แก้ในไฟล์ HTML ตรง href="#")</p>
+</div></section>
+
+<div id="livewrap">
+<section><div class="wrap">
+  <div class="eyebrow"><h2>ภาพรวม dataset</h2><div class="rule"></div></div>
+  <div class="statgrid">
+    <div class="stat"><div class="bigstat" id="s-count">–</div><small>ร้านในระบบ</small></div>
+    <div class="stat"><div class="bigstat" id="s-price">–</div><small>ราคาเฉลี่ย/คน</small></div>
+    <div class="stat"><div class="bigstat" id="s-top">–</div><small>คะแนนสูงสุด (0–100)</small></div>
+    <div class="stat"><div class="bigstat" id="s-group">–</div><small>รองรับกลุ่ม 8–12</small></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>คำแนะนำตาม Scenario — Top 3</h2><div class="rule"></div></div>
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-s="team">👥 ทีม 8–12</button>
+    <button class="tab" data-s="safe">🎯 ปลอดภัยสุด</button>
+    <button class="tab" data-s="budget">💸 ประหยัด</button>
+    <button class="tab" data-s="fast">⚡ รีบกิน</button>
+    <button class="tab" data-s="talk">🤫 คุยงานได้</button>
+  </div>
+  <div class="cards" id="cards"></div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>🤖 AI Ask Box <span style="font-size:13px;color:var(--muted);font-weight:400">— ตอบจาก dataset เท่านั้น</span></h2><div class="rule"></div></div>
+  <div class="askwrap">
+    <div class="askrow"><input id="ask" placeholder="เช่น: ทีม 12 คน งบ 400/คน อยากคุยงาน ร้านไหนดี?"><button id="askbtn">ถาม</button></div>
+    <div class="samples"><b>ลองถาม:</b>
+      <span class="samp">ร้านญี่ปุ่นงบไม่เกิน 500 รองรับ 10 คนไหม?</span>
+      <span class="samp">ทีม 12 คน อยากคุยงาน เงียบๆ</span>
+      <span class="samp">rating ดีที่สุดในย่านนี้</span>
+      <span class="samp">ถูกที่สุดคือร้านไหน</span>
+      <span class="samp">รีวิวเยอะสุด น่าเชื่อถือ</span>
+      <span class="samp">ปิ้งย่าง/เกาหลี กลุ่มใหญ่</span>
+    </div>
+    <div class="answer" id="answer"></div>
+    <p class="grounded">⚙️ เครื่องมือนี้ค้นและจัดอันดับจาก dataset ของย่านที่เลือกเท่านั้น (grounded) ไม่ใช้ความรู้ทั่วไปนอกชุดข้อมูล</p>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>โมเดลให้คะแนน</h2><div class="rule"></div></div>
+  <div class="statgrid" style="grid-template-columns:1fr">
+    <div class="stat" style="box-shadow:6px 6px 0 var(--ink)">
+      <p style="font-size:14px"><b>น้ำหนัก (เต็ม 100):</b> Rating &amp; Review 25 · Group Suitability 20 · Price 15 · Travel 15 · Data Completeness 15 · Uniqueness 10</p>
+      <p style="font-size:13.5px;margin-top:8px;color:var(--muted)"><b style="color:var(--ink)">Hybrid:</b> หมวดที่วัดจากข้อมูลตรง (Rating/Price/Travel/Data) ทำซ้ำได้ 100% · Group &amp; Uniqueness ใช้ signal จริง (แท็กกลุ่ม/รับจอง/ห้องส่วนตัว) + AI อ่านรีวิวปรับ sentiment</p>
+      <p style="font-size:13.5px;margin-top:8px;color:var(--muted)"><b style="color:var(--ink)">2 แหล่ง:</b> Google Maps (Apify) 72 ร้าน + Wongnai (Browse AI) 100 ร้าน · cross-check 22 ร้าน ค่าเรตติ้งต่างเฉลี่ย 0.35 · <b style="color:var(--ink)">Confidence/Risk</b> คำนวณจากจำนวนรีวิว+ความครบ — ร้านรีวิวน้อยติดธง 🚩 Human Review</p>
+      <p style="font-size:12.5px;margin-top:8px;color:var(--muted)">หมายเหตุ accessibility: แถบคะแนน/ความเสี่ยงมีตัวเลข+ข้อความกำกับเสมอ ไม่สื่อด้วยสีอย่างเดียว</p>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <div class="eyebrow"><h2>Dataset ทั้งหมด</h2><div class="rule"></div></div>
+  <div class="controls">
+    <input class="search" id="q" placeholder="🔍 ค้นหาชื่อร้าน...">
+    <select id="catf"><option value="">ทุกประเภท</option></select>
+    <select id="pricef"><option value="">ทุกราคา</option><option>฿</option><option>฿฿</option><option>฿฿฿</option><option>฿฿฿฿</option></select>
+    <select id="riskf"><option value="">ทุกความเสี่ยง</option><option value="low">เสี่ยงต่ำ</option><option value="med">เสี่ยงกลาง</option><option value="high">เสี่ยงสูง</option></select>
+    <label><input type="checkbox" id="hrf"> เฉพาะที่ติด 🚩 Human Review</label>
+  </div>
+  <div class="tablewrap"><table id="tbl"><thead><tr>
+    <th data-k="rank">#</th><th data-k="name">ร้าน</th><th data-k="cat">ประเภท</th>
+    <th data-k="rating">เรตติ้ง</th><th data-k="revs">รีวิว</th><th data-k="price">฿/หัว</th>
+    <th data-k="dist">ระยะ(m)</th><th data-k="noise">เสียง</th>
+    <th data-k="conf">Confidence</th><th data-k="risk">Risk</th>
+    <th data-k="total">รวม/100</th>
+  </tr></thead><tbody id="tb"></tbody></table></div>
+</div></section>
+</div>
+
+<div id="mockwrap"><section><div class="wrap"><div class="mockoverlay" id="mockoverlay">
+  <h3>ยังไม่มี Live Data สำหรับย่านนี้</h3>
+  <p>ตามโจทย์ "choose one of 5 areas only" — เก็บข้อมูลจริงย่านเดียว (เลือก <b>🌿 อารีย์</b>) ส่วนย่านอื่นเป็น UI scaffold (mock)<br>ขยายได้โดย scrape ย่านนั้นแล้วเติม dataset เข้า AREAS</p>
+</div></div></section></div>
+
+<footer><div class="wrap">
+  <p><b>AI Food Assistant — Team Dinner Finder.</b> สร้าง 6 มิ.ย. 2026 · พื้นที่ live: อารีย์, กรุงเทพฯ</p>
+  <p>แหล่งข้อมูล: Google Maps (Apify · compass/crawler-google-places) + Wongnai (Browse AI). คะแนนคำนวณจากข้อมูลที่ตรวจย้อนกลับได้ · รายละเอียดใน Google Sheet ที่แนบ</p>
+</div></footer>
+
+<script>
+const AREAS = {"ari": [{"name": "Shinsei Sushi", "cat": "Sushi restaurant", "rating": 4.7, "revs": 847, "price": 400, "tier": "฿฿฿", "dist": 253, "noise": NaN, "sr": 23.8, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 14.0, "su": 8.5, "total": 91.3, "conf": 90, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รองรับกลุ่ม", "ใกล้ BTS มาก"], "cons": [], "scn": {"team": 91.3, "safe": 85.6, "budget": 78.9, "fast": 82.1, "talk": 70.4}, "why": "Service ดีสม่ำเสมอกว่า 10 ปี ลูกค้าบอก “ทุกคนที่พามาชอบหมด” ซูชิ Edomae คุณภาพระดับญี่ปุ่น ใกล้ BTS สุด", "trade": "ซูชิแชร์เป็นกลุ่มใหญ่ยากกว่าปิ้งย่าง ควรจองล่วงหน้า"}, {"name": "Apgujeong Grill Korean BBQ (APG grill)", "cat": "Korean barbecue restaurant", "rating": 4.9, "revs": 799, "price": 700, "tier": "฿฿฿", "dist": 291, "noise": "Quiet", "sr": 24.4, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 14.0, "su": 7.0, "total": 90.4, "conf": 90, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รองรับกลุ่ม", "ใกล้ BTS มาก"], "cons": ["ราคาสูง"], "scn": {"team": 90.4, "safe": 87.1, "budget": 70.1, "fast": 74.9, "talk": 91.8}, "why": "เรตติ้งสูงสุด 4.9 ปิ้งย่างเกาหลีเป็นฟอร์แมตสังสรรค์กลุ่มที่ดีที่สุด พนักงานย่างให้ side dish เยอะ รับจอง", "trade": "แพงสุดใน Top 3 (~฿700/หัว) บางรีวิวติด service + มีกลิ่นควัน"}, {"name": "Madame Chill Cafe & Bistro", "cat": "Restaurant", "rating": 4.6, "revs": 74, "price": 500, "tier": "฿฿฿", "dist": 287, "noise": "Quiet", "sr": 20.8, "sp": 15.0, "st": 15.0, "sc": 13.8, "sg": 18.0, "su": 6.5, "total": 89.0, "conf": 78, "risk": "med", "review": true, "pros": ["มีห้องส่วนตัว", "ใกล้ BTS มาก", "รับจอง"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม"], "scn": {"team": 89.0, "safe": 78.2, "budget": 78.9, "fast": 68.4, "talk": 94.7}, "why": "Group fit สูงสุด มีห้องส่วนตัว เจ้าของช่วยจัด event ลูกค้าบอก “นี่แหละ vibe สำหรับกลุ่มเรา”", "trade": "รีวิวยังน้อย (74) ความมั่นใจเรตติ้งต่ำกว่า — ควร human review"}, {"name": "Paknang.bkk", "cat": "Restaurant", "rating": 4.8, "revs": 1341, "price": 500, "tier": "฿฿฿", "dist": 526, "noise": "Quiet", "sr": 24.3, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 14.0, "su": 7.0, "total": 87.3, "conf": 93, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 87.3, "safe": 88.5, "budget": 76.1, "fast": 81.9, "talk": 91.1}, "why": "", "trade": ""}, {"name": "Lay Lao", "cat": "Thai restaurant", "rating": 4.5, "revs": 2460, "price": 500, "tier": "฿฿฿", "dist": 233, "noise": "Loud", "sr": 23.2, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 13.0, "su": 6.0, "total": 87.2, "conf": 95, "risk": "low", "review": false, "pros": ["รีวิวเยอะ น่าเชื่อถือ", "มีห้องส่วนตัว", "ใกล้ BTS มาก"], "cons": ["เสียงดัง"], "scn": {"team": 87.2, "safe": 87.4, "budget": 73.3, "fast": 83.1, "talk": 55.8}, "why": "", "trade": ""}, {"name": "Clay Bangkok", "cat": "Restaurant", "rating": 4.8, "revs": 1085, "price": 800, "tier": "฿฿฿฿", "dist": 261, "noise": "Quiet", "sr": 24.3, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 11.0, "su": 6.0, "total": 86.3, "conf": 91, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "รองรับกลุ่ม"], "cons": ["ราคาสูง"], "scn": {"team": 86.3, "safe": 84.6, "budget": 63.1, "fast": 73.0, "talk": 87.3}, "why": "", "trade": ""}, {"name": "Lucky’s Hungry สาขา HAUS อารีย์", "cat": "Fusion restaurant", "rating": 4.7, "revs": 1524, "price": 300, "tier": "฿฿", "dist": 299, "noise": "Quiet", "sr": 23.9, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 9.0, "su": 7.0, "total": 85.0, "conf": 93, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "ราคาคุ้ม"], "cons": [], "scn": {"team": 85.0, "safe": 83.1, "budget": 77.2, "fast": 87.3, "talk": 84.2}, "why": "", "trade": ""}, {"name": "Kopihub Prime l Ari", "cat": "Dim sum restaurant", "rating": 4.8, "revs": 3431, "price": 300, "tier": "฿฿", "dist": 322, "noise": "Quiet", "sr": 24.3, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 12.0, "su": 5.0, "total": 83.3, "conf": 95, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "ราคาคุ้ม"], "cons": [], "scn": {"team": 83.3, "safe": 90.2, "budget": 80.8, "fast": 91.0, "talk": 88.6}, "why": "", "trade": ""}, {"name": "KENSHIN IZAKAYA", "cat": "Izakaya restaurant", "rating": 4.3, "revs": 539, "price": 800, "tier": "฿฿฿฿", "dist": 43, "noise": "Moderate", "sr": 21.9, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 10.0, "su": 5.4, "total": 82.3, "conf": 88, "risk": "low", "review": false, "pros": ["รองรับกลุ่ม", "ใกล้ BTS มาก", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 82.3, "safe": 76.0, "budget": 59.1, "fast": 67.5, "talk": 64.6}, "why": "", "trade": ""}, {"name": "Karimaki", "cat": "Restaurant", "rating": 4.8, "revs": 600, "price": 300, "tier": "฿฿", "dist": 94, "noise": "Quiet", "sr": 23.8, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 11.0, "su": 2.5, "total": 82.2, "conf": 88, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 82.2, "safe": 82.0, "budget": 79.8, "fast": 83.8, "talk": 87.3}, "why": "", "trade": ""}, {"name": "Wraptor Ari", "cat": "Mexican restaurant", "rating": 4.7, "revs": 311, "price": 400, "tier": "฿฿฿", "dist": 527, "noise": "Quiet", "sr": 22.7, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 10.0, "su": 6.8, "total": 81.5, "conf": 85, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รองรับกลุ่ม", "รับจอง"], "cons": [], "scn": {"team": 81.5, "safe": 77.2, "budget": 74.9, "fast": 77.8, "talk": 85.4}, "why": "", "trade": ""}, {"name": "Paper Butter and the Burger", "cat": "Hamburger restaurant", "rating": 4.6, "revs": 601, "price": 300, "tier": "฿฿", "dist": 506, "noise": "Quiet", "sr": 23.1, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 11.0, "su": 5.4, "total": 81.5, "conf": 88, "risk": "low", "review": false, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "รับจอง"], "cons": [], "scn": {"team": 81.5, "safe": 80.2, "budget": 78.6, "fast": 82.8, "talk": 85.9}, "why": "", "trade": ""}, {"name": "Seiniku-Ten @ Ari", "cat": "Yakiniku restaurant", "rating": 4.5, "revs": 1514, "price": 900, "tier": "฿฿฿฿", "dist": 324, "noise": "Quiet", "sr": 23.2, "sp": 12.0, "st": 12.0, "sc": 15.0, "sg": 14.0, "su": 4.8, "total": 81.0, "conf": 93, "risk": "low", "review": false, "pros": ["รีวิวเยอะ น่าเชื่อถือ", "มีห้องส่วนตัว", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 81.0, "safe": 86.3, "budget": 61.0, "fast": 70.3, "talk": 89.0}, "why": "", "trade": ""}, {"name": "Yellow Lane", "cat": "Restaurant", "rating": 4.5, "revs": 860, "price": 400, "tier": "฿฿฿", "dist": 738, "noise": "Quiet", "sr": 23.1, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 13.0, "su": 5.5, "total": 80.6, "conf": 90, "risk": "low", "review": false, "pros": ["มีห้องส่วนตัว", "รับจอง"], "cons": [], "scn": {"team": 80.6, "safe": 82.9, "budget": 76.7, "fast": 81.2, "talk": 87.8}, "why": "", "trade": ""}, {"name": "Suankularb Restaurant", "cat": "Thai restaurant", "rating": 4.2, "revs": 1046, "price": 300, "tier": "฿฿", "dist": 595, "noise": "Quiet", "sr": 22.2, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 15.0, "su": 1.3, "total": 80.5, "conf": 91, "risk": "low", "review": false, "pros": ["รีวิวเยอะ น่าเชื่อถือ", "ราคาคุ้ม", "มีห้องส่วนตัว"], "cons": [], "scn": {"team": 80.5, "safe": 83.0, "budget": 80.2, "fast": 83.2, "talk": 88.1}, "why": "", "trade": ""}, {"name": "Sousaku Ari", "cat": "Japanese restaurant", "rating": 4.6, "revs": 1122, "price": 1200, "tier": "฿฿฿฿", "dist": 472, "noise": NaN, "sr": 23.6, "sp": 12.0, "st": 12.0, "sc": 15.0, "sg": 15.0, "su": 2.8, "total": 80.4, "conf": 92, "risk": "low", "review": false, "pros": ["รีวิวเยอะ น่าเชื่อถือ", "มีห้องส่วนตัว", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 80.4, "safe": 86.9, "budget": 52.6, "fast": 61.5, "talk": 71.0}, "why": "", "trade": ""}, {"name": "Brewave x Ari", "cat": "Restaurant", "rating": 4.9, "revs": 2166, "price": 600, "tier": "฿฿฿", "dist": 101, "noise": "Loud", "sr": 24.6, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 6.0, "su": 4.5, "total": 80.2, "conf": 95, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "รองรับกลุ่ม"], "cons": ["เสียงดัง"], "scn": {"team": 80.2, "safe": 83.5, "budget": 65.4, "fast": 81.9, "talk": 49.8}, "why": "", "trade": ""}, {"name": "Kinroll - Ari | กินโรล - อารีย์", "cat": "Restaurant", "rating": 4.8, "revs": 397, "price": 1200, "tier": "฿฿฿฿", "dist": 395, "noise": "Quiet", "sr": 23.3, "sp": 12.0, "st": 12.0, "sc": 15.0, "sg": 12.0, "su": 5.7, "total": 80.0, "conf": 86, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รองรับกลุ่ม", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 80.0, "safe": 81.2, "budget": 50.8, "fast": 58.0, "talk": 88.6}, "why": "", "trade": ""}, {"name": "Ongtong Khaosoi Ari Branch", "cat": "Thai restaurant", "rating": 4.3, "revs": 1859, "price": 300, "tier": "฿฿", "dist": 153, "noise": "Quiet", "sr": 22.6, "sp": 15.0, "st": 15.0, "sc": 13.8, "sg": 10.0, "su": 3.7, "total": 80.0, "conf": 94, "risk": "low", "review": false, "pros": ["รีวิวเยอะ น่าเชื่อถือ", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 80.0, "safe": 81.4, "budget": 75.8, "fast": 86.2, "talk": 82.6}, "why": "", "trade": ""}, {"name": "Madcow burger x Under Over Ari", "cat": "Hamburger restaurant", "rating": 4.8, "revs": 245, "price": 300, "tier": "฿฿", "dist": 92, "noise": "Quiet", "sr": 22.8, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 7.0, "su": 4.8, "total": 79.6, "conf": 84, "risk": "med", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 79.6, "safe": 74.1, "budget": 75.8, "fast": 79.9, "talk": 82.3}, "why": "", "trade": ""}, {"name": "qraft. (Ari soi1)", "cat": "Cafe", "rating": 4.4, "revs": 397, "price": 300, "tier": "฿฿", "dist": 96, "noise": "Quiet", "sr": 21.9, "sp": 15.0, "st": 15.0, "sc": 13.8, "sg": 10.0, "su": 3.8, "total": 79.5, "conf": 86, "risk": "low", "review": false, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "ใกล้ BTS มาก"], "cons": [], "scn": {"team": 79.5, "safe": 75.6, "budget": 76.4, "fast": 80.0, "talk": 83.3}, "why": "", "trade": ""}, {"name": "FuFu Taiwanese Shabu Ari", "cat": "Shabu-shabu restaurant", "rating": 4.6, "revs": 1976, "price": 700, "tier": "฿฿฿", "dist": 659, "noise": NaN, "sr": 23.6, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 11.0, "su": 5.8, "total": 79.4, "conf": 95, "risk": "low", "review": false, "pros": ["รีวิวเยอะ น่าเชื่อถือ", "รองรับกลุ่ม", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 79.4, "safe": 85.4, "budget": 65.3, "fast": 77.3, "talk": 66.0}, "why": "", "trade": ""}, {"name": "Senryoku curry rice เซนเรียวคุ ข้าวแกงกะหรี่จัดเต็ม", "cat": "Japanese curry restaurant", "rating": 4.6, "revs": 635, "price": 300, "tier": "฿฿", "dist": 237, "noise": "Loud", "sr": 23.1, "sp": 15.0, "st": 15.0, "sc": 13.8, "sg": 5.0, "su": 7.4, "total": 79.3, "conf": 89, "risk": "low", "review": false, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "ใกล้ BTS มาก"], "cons": ["เสียงดัง"], "scn": {"team": 79.3, "safe": 74.4, "budget": 72.6, "fast": 83.0, "talk": 46.4}, "why": "", "trade": ""}, {"name": "Kenny's BKK - Ari", "cat": "Restaurant", "rating": 4.7, "revs": 1240, "price": 500, "tier": "฿฿฿", "dist": 351, "noise": "Quiet", "sr": 23.9, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 10.0, "su": 3.3, "total": 79.2, "conf": 92, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 79.2, "safe": 83.2, "budget": 71.5, "fast": 81.1, "talk": 85.4}, "why": "", "trade": ""}, {"name": "Brooks brunch & bar Ari", "cat": "Restaurant", "rating": 4.8, "revs": 1771, "price": 700, "tier": "฿฿฿", "dist": 450, "noise": NaN, "sr": 24.3, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 8.0, "su": 4.9, "total": 79.2, "conf": 94, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "รองรับกลุ่ม"], "cons": ["ราคาสูง"], "scn": {"team": 79.2, "safe": 83.7, "budget": 63.5, "fast": 77.8, "talk": 63.6}, "why": "", "trade": ""}, {"name": "Sekai no Yamachan @Ari", "cat": "Izakaya restaurant", "rating": 4.4, "revs": 170, "price": 600, "tier": "฿฿฿", "dist": 337, "noise": "Moderate", "sr": 21.0, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 12.0, "su": 3.8, "total": 78.8, "conf": 82, "risk": "med", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": [], "scn": {"team": 78.8, "safe": 73.9, "budget": 68.4, "fast": 68.3, "talk": 67.8}, "why": "", "trade": ""}, {"name": "Baan Pueng Chom", "cat": "Thai restaurant", "rating": 4.2, "revs": 1628, "price": 300, "tier": "฿฿", "dist": 331, "noise": "Loud", "sr": 22.2, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 12.0, "su": 2.5, "total": 78.7, "conf": 94, "risk": "low", "review": false, "pros": ["รีวิวเยอะ น่าเชื่อถือ", "ราคาคุ้ม", "มีห้องส่วนตัว"], "cons": ["เสียงดัง"], "scn": {"team": 78.7, "safe": 81.9, "budget": 77.2, "fast": 85.1, "talk": 52.4}, "why": "", "trade": ""}, {"name": "Do Nūa - La Villa Ari", "cat": "Thai restaurant", "rating": 4.9, "revs": 160, "price": 300, "tier": "฿฿", "dist": 69, "noise": "Quiet", "sr": 22.7, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 6.0, "su": 4.9, "total": 78.6, "conf": 81, "risk": "med", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 78.6, "safe": 72.2, "budget": 75.4, "fast": 78.6, "talk": 81.8}, "why": "", "trade": ""}, {"name": "PERB", "cat": "Thai restaurant", "rating": 4.4, "revs": 316, "price": 500, "tier": "฿฿฿", "dist": 93, "noise": "Loud", "sr": 21.6, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 9.0, "su": 2.9, "total": 78.5, "conf": 85, "risk": "low", "review": false, "pros": ["รองรับกลุ่ม", "ใกล้ BTS มาก", "รับจอง"], "cons": ["เสียงดัง"], "scn": {"team": 78.5, "safe": 73.6, "budget": 68.7, "fast": 73.7, "talk": 50.1}, "why": "", "trade": ""}, {"name": "Hanazen", "cat": "Japanese restaurant", "rating": 4.6, "revs": 623, "price": 1200, "tier": "฿฿฿฿", "dist": 664, "noise": "Quiet", "sr": 23.1, "sp": 12.0, "st": 9.0, "sc": 15.0, "sg": 13.0, "su": 6.0, "total": 78.1, "conf": 89, "risk": "low", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 78.1, "safe": 82.4, "budget": 50.6, "fast": 59.0, "talk": 88.4}, "why": "", "trade": ""}, {"name": "Ohachi Butadon (Ari) โอฮาชิ อารีย์", "cat": "Japanese restaurant", "rating": 4.6, "revs": 725, "price": 300, "tier": "฿฿", "dist": 99, "noise": "Quiet", "sr": 23.2, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 7.0, "su": 2.8, "total": 78.0, "conf": 89, "risk": "low", "review": false, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "ใกล้ BTS มาก"], "cons": [], "scn": {"team": 78.0, "safe": 77.0, "budget": 74.6, "fast": 83.6, "talk": 81.0}, "why": "", "trade": ""}, {"name": "Tairyo Sushi - Ari", "cat": "Japanese restaurant", "rating": 4.7, "revs": 360, "price": 500, "tier": "฿฿฿", "dist": 326, "noise": NaN, "sr": 22.8, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 10.0, "su": 3.0, "total": 77.8, "conf": 86, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รองรับกลุ่ม", "รับจอง"], "cons": [], "scn": {"team": 77.8, "safe": 77.9, "budget": 71.5, "fast": 75.7, "talk": 65.4}, "why": "", "trade": ""}, {"name": "Lase Lase Cafe: Point Ari", "cat": "Cafe", "rating": 4.8, "revs": 150, "price": 300, "tier": "฿฿", "dist": 323, "noise": "Quiet", "sr": 22.2, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 6.0, "su": 7.4, "total": 77.7, "conf": 81, "risk": "med", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 77.7, "safe": 71.0, "budget": 74.8, "fast": 77.8, "talk": 81.1}, "why": "", "trade": ""}, {"name": "PINK TYPHOON Creative Pasta, Steak & Wine", "cat": "Restaurant", "rating": 4.8, "revs": 490, "price": 800, "tier": "฿฿฿฿", "dist": 1003, "noise": NaN, "sr": 23.5, "sp": 15.0, "st": 6.0, "sc": 15.0, "sg": 11.0, "su": 6.5, "total": 77.0, "conf": 87, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รองรับกลุ่ม", "รับจอง"], "cons": ["ราคาสูง", "ไกล BTS"], "scn": {"team": 77.0, "safe": 81.1, "budget": 63.1, "fast": 69.6, "talk": 67.3}, "why": "", "trade": ""}, {"name": "O’ganic Concept ARI", "cat": "Restaurant", "rating": 4.9, "revs": 476, "price": 300, "tier": "฿฿", "dist": 684, "noise": NaN, "sr": 23.9, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 10.0, "su": 4.1, "total": 77.0, "conf": 87, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 77.0, "safe": 80.9, "budget": 79.4, "fast": 83.3, "talk": 66.8}, "why": "", "trade": ""}, {"name": "ท่านพ่อซาลาเปา @ La Villa Ari", "cat": "Restaurant", "rating": 4.9, "revs": 357, "price": 100, "tier": "฿", "dist": 46, "noise": NaN, "sr": 23.5, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 5.0, "su": 3.3, "total": 76.8, "conf": 86, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 76.8, "safe": 74.6, "budget": 81.1, "fast": 87.4, "talk": 60.6}, "why": "", "trade": ""}, {"name": "The Cafe Mookata Ari", "cat": "Restaurant", "rating": 4.6, "revs": 209, "price": 500, "tier": "฿฿฿", "dist": 749, "noise": "Quiet", "sr": 21.9, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 12.0, "su": 3.9, "total": 76.8, "conf": 83, "risk": "med", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": [], "scn": {"team": 76.8, "safe": 76.6, "budget": 72.9, "fast": 72.9, "talk": 87.2}, "why": "", "trade": ""}, {"name": "Sawasdee Banh Mi Centric Ari", "cat": "Vietnamese restaurant", "rating": 4.8, "revs": 117, "price": 100, "tier": "฿", "dist": 334, "noise": NaN, "sr": 22.0, "sp": 15.0, "st": 12.0, "sc": 13.8, "sg": 8.0, "su": 6.0, "total": 76.7, "conf": 80, "risk": "med", "review": true, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "มีห้องส่วนตัว"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม"], "scn": {"team": 76.7, "safe": 71.9, "budget": 83.5, "fast": 82.0, "talk": 63.6}, "why": "", "trade": ""}, {"name": "ร้าน 1000เส้น ซอยอารีย์", "cat": "Noodle shop", "rating": 4.0, "revs": 369, "price": 150, "tier": "฿฿", "dist": 102, "noise": "Quiet", "sr": 20.4, "sp": 15.0, "st": 15.0, "sc": 15.0, "sg": 4.0, "su": 7.0, "total": 76.4, "conf": 86, "risk": "low", "review": false, "pros": ["ราคาคุ้ม", "ใกล้ BTS มาก"], "cons": [], "scn": {"team": 76.4, "safe": 65.7, "budget": 73.0, "fast": 81.7, "talk": 73.0}, "why": "", "trade": ""}, {"name": "Cantina Italian Kitchen (Ari)", "cat": "Italian restaurant", "rating": 4.6, "revs": 796, "price": 1000, "tier": "฿฿฿฿", "dist": 682, "noise": "Moderate", "sr": 23.4, "sp": 12.0, "st": 9.0, "sc": 15.0, "sg": 10.0, "su": 7.0, "total": 76.3, "conf": 90, "risk": "low", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 76.3, "safe": 80.4, "budget": 54.3, "fast": 65.3, "talk": 66.7}, "why": "", "trade": ""}, {"name": "Fishmonger Ari", "cat": "Restaurant", "rating": 4.4, "revs": 1023, "price": 500, "tier": "฿฿฿", "dist": 564, "noise": "Loud", "sr": 22.9, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 10.0, "su": 1.3, "total": 76.2, "conf": 91, "risk": "low", "review": false, "pros": ["รีวิวเยอะ น่าเชื่อถือ", "รองรับกลุ่ม", "รับจอง"], "cons": ["เสียงดัง"], "scn": {"team": 76.2, "safe": 79.7, "budget": 69.7, "fast": 78.8, "talk": 51.3}, "why": "", "trade": ""}, {"name": "Hungry Brown Eat and Coffee Roasters", "cat": "Restaurant", "rating": 4.5, "revs": 459, "price": 300, "tier": "฿฿", "dist": 804, "noise": NaN, "sr": 22.4, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 10.0, "su": 4.7, "total": 76.1, "conf": 87, "risk": "low", "review": false, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "รับจอง"], "cons": ["ไกล BTS"], "scn": {"team": 76.1, "safe": 77.1, "budget": 77.0, "fast": 81.1, "talk": 64.0}, "why": "", "trade": ""}, {"name": "MIA Made In Ari (เมีย เมดอินอารีย์)", "cat": "Restaurant", "rating": 4.9, "revs": 174, "price": 500, "tier": "฿฿฿", "dist": 877, "noise": "Moderate", "sr": 22.8, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 10.0, "su": 4.1, "total": 75.9, "conf": 82, "risk": "med", "review": false, "pros": ["เรตติ้งสูงมาก", "รองรับกลุ่ม", "รับจอง"], "cons": ["ไกล BTS"], "scn": {"team": 75.9, "safe": 76.5, "budget": 72.7, "fast": 73.6, "talk": 68.8}, "why": "", "trade": ""}, {"name": "ซอยข่อยแน Soikoinae ส้มตำ อารีย์-สะพานควาย", "cat": "Thai restaurant", "rating": 4.8, "revs": 1957, "price": 300, "tier": "฿฿", "dist": 664, "noise": "Moderate", "sr": 24.3, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 10.0, "su": 2.5, "total": 75.8, "conf": 95, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "ราคาคุ้ม"], "cons": [], "scn": {"team": 75.8, "safe": 86.1, "budget": 78.8, "fast": 88.9, "talk": 68.1}, "why": "", "trade": ""}, {"name": "Eggtisan by commonroom x ari", "cat": "Breakfast restaurant", "rating": 4.6, "revs": 693, "price": 300, "tier": "฿฿", "dist": 348, "noise": "Quiet", "sr": 23.2, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 4.0, "su": 6.6, "total": 75.8, "conf": 89, "risk": "low", "review": false, "pros": ["ราคาคุ้ม"], "cons": [], "scn": {"team": 75.8, "safe": 73.8, "budget": 71.6, "fast": 83.4, "talk": 77.2}, "why": "", "trade": ""}, {"name": "Barney's Burger Joint", "cat": "Hamburger restaurant", "rating": 4.8, "revs": 718, "price": 300, "tier": "฿฿", "dist": 349, "noise": NaN, "sr": 23.9, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 5.0, "su": 4.8, "total": 75.7, "conf": 89, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 75.7, "safe": 76.8, "budget": 73.8, "fast": 84.6, "talk": 59.9}, "why": "", "trade": ""}, {"name": "Honmono Sushi Arisamphan1", "cat": "Japanese restaurant", "rating": 4.7, "revs": 152, "price": 1200, "tier": "฿฿฿฿", "dist": 688, "noise": "Quiet", "sr": 21.9, "sp": 12.0, "st": 9.0, "sc": 15.0, "sg": 14.0, "su": 3.8, "total": 75.7, "conf": 81, "risk": "med", "review": false, "pros": ["เรตติ้งสูงมาก", "มีห้องส่วนตัว", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 75.7, "safe": 78.1, "budget": 52.2, "fast": 53.3, "talk": 90.4}, "why": "", "trade": ""}, {"name": "SA-RA-NAE", "cat": "Thai restaurant", "rating": 4.6, "revs": 359, "price": 700, "tier": "฿฿฿", "dist": 543, "noise": "Quiet", "sr": 22.5, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 8.0, "su": 3.1, "total": 75.6, "conf": 86, "risk": "low", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 75.6, "safe": 75.0, "budget": 62.3, "fast": 69.9, "talk": 82.2}, "why": "", "trade": ""}, {"name": "Beef Sociaty - พริกกะเกลือ สาขาอารีย์", "cat": "Thai restaurant", "rating": 4.8, "revs": 32, "price": 100, "tier": "฿", "dist": 329, "noise": "Quiet", "sr": 20.6, "sp": 15.0, "st": 12.0, "sc": 13.8, "sg": 9.0, "su": 4.9, "total": 75.2, "conf": 73, "risk": "med", "review": true, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม"], "scn": {"team": 75.2, "safe": 67.4, "budget": 84.4, "fast": 76.5, "talk": 84.9}, "why": "", "trade": ""}, {"name": "Sushi Kōge", "cat": "Sushi restaurant", "rating": 4.9, "revs": 231, "price": 2400, "tier": "฿฿฿฿", "dist": 298, "noise": "Quiet", "sr": 23.1, "sp": 7.0, "st": 15.0, "sc": 15.0, "sg": 6.0, "su": 9.0, "total": 75.1, "conf": 83, "risk": "med", "review": false, "pros": ["เรตติ้งสูงมาก", "ใกล้ BTS มาก", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 75.1, "safe": 73.8, "budget": 35.4, "fast": 48.2, "talk": 81.8}, "why": "", "trade": ""}, {"name": "Luigi Bangkok", "cat": "Italian restaurant", "rating": 4.6, "revs": 199, "price": 2400, "tier": "฿฿฿฿", "dist": 293, "noise": "Quiet", "sr": 21.9, "sp": 7.0, "st": 15.0, "sc": 15.0, "sg": 10.0, "su": 5.4, "total": 74.2, "conf": 83, "risk": "med", "review": false, "pros": ["รองรับกลุ่ม", "ใกล้ BTS มาก", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 74.2, "safe": 74.4, "budget": 37.6, "fast": 46.0, "talk": 84.7}, "why": "", "trade": ""}, {"name": "Yakiniku Oniku to Gohan Ari", "cat": "Yakiniku restaurant", "rating": 4.3, "revs": 263, "price": 1200, "tier": "฿฿฿฿", "dist": 715, "noise": NaN, "sr": 21.1, "sp": 12.0, "st": 9.0, "sc": 15.0, "sg": 10.0, "su": 7.0, "total": 74.1, "conf": 84, "risk": "med", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 74.1, "safe": 72.9, "budget": 45.8, "fast": 53.7, "talk": 62.6}, "why": "", "trade": ""}, {"name": "Knock Knock Cafe & Bar", "cat": "Restaurant", "rating": 4.5, "revs": 189, "price": 300, "tier": "฿฿", "dist": 947, "noise": "Quiet", "sr": 21.4, "sp": 15.0, "st": 9.0, "sc": 13.8, "sg": 9.0, "su": 5.5, "total": 73.7, "conf": 82, "risk": "med", "review": false, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "รับจอง"], "cons": ["ไกล BTS"], "scn": {"team": 73.7, "safe": 72.3, "budget": 76.0, "fast": 77.3, "talk": 82.8}, "why": "", "trade": ""}, {"name": "ชอุ่ม Cha Um", "cat": "Restaurant", "rating": 4.7, "revs": 66, "price": 250, "tier": "฿฿", "dist": 481, "noise": "Quiet", "sr": 21.0, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 8.0, "su": 2.5, "total": 73.5, "conf": 77, "risk": "med", "review": true, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม"], "scn": {"team": 73.5, "safe": 68.6, "budget": 77.9, "fast": 75.1, "talk": 82.9}, "why": "", "trade": ""}, {"name": "KHAO NIAO", "cat": "Restaurant", "rating": 4.6, "revs": 296, "price": 500, "tier": "฿฿฿", "dist": 1028, "noise": "Quiet", "sr": 22.3, "sp": 15.0, "st": 6.0, "sc": 15.0, "sg": 12.0, "su": 3.1, "total": 73.4, "conf": 85, "risk": "low", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": ["ไกล BTS"], "scn": {"team": 73.4, "safe": 78.1, "budget": 72.9, "fast": 74.4, "talk": 87.2}, "why": "", "trade": ""}, {"name": "Baby Bar Bangkok", "cat": "Restaurant", "rating": 4.6, "revs": 804, "price": 400, "tier": "฿฿฿", "dist": 868, "noise": "Quiet", "sr": 23.4, "sp": 15.0, "st": 9.0, "sc": 12.5, "sg": 10.0, "su": 3.1, "total": 73.0, "conf": 90, "risk": "low", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": ["ไกล BTS"], "scn": {"team": 73.0, "safe": 80.5, "budget": 74.3, "fast": 81.4, "talk": 84.7}, "why": "", "trade": ""}, {"name": "Hotaru 119 Omakase & Izakaya - Sanampao", "cat": "Japanese restaurant", "rating": 4.8, "revs": 2577, "price": 1200, "tier": "฿฿฿฿", "dist": 1333, "noise": NaN, "sr": 24.3, "sp": 12.0, "st": 6.0, "sc": 15.0, "sg": 9.0, "su": 6.2, "total": 72.5, "conf": 95, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "รองรับกลุ่ม"], "cons": ["ราคาสูง", "ไกล BTS"], "scn": {"team": 72.5, "safe": 86.3, "budget": 47.8, "fast": 66.1, "talk": 64.9}, "why": "", "trade": ""}, {"name": "OIKOS - Brunch & Bar", "cat": "Restaurant", "rating": 4.3, "revs": 282, "price": 400, "tier": "฿฿฿", "dist": 355, "noise": NaN, "sr": 21.2, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 8.0, "su": 1.3, "total": 72.5, "conf": 84, "risk": "med", "review": false, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": [], "scn": {"team": 72.5, "safe": 71.2, "budget": 70.5, "fast": 75.4, "talk": 60.1}, "why": "", "trade": ""}, {"name": "Parma Ari", "cat": "Italian restaurant", "rating": 4.7, "revs": 187, "price": 1400, "tier": "฿฿฿฿", "dist": 736, "noise": "Quiet", "sr": 22.1, "sp": 9.0, "st": 9.0, "sc": 15.0, "sg": 10.0, "su": 7.2, "total": 72.3, "conf": 82, "risk": "med", "review": false, "pros": ["เรตติ้งสูงมาก", "รองรับกลุ่ม", "รับจอง"], "cons": ["ราคาสูง"], "scn": {"team": 72.3, "safe": 75.0, "budget": 41.5, "fast": 48.9, "talk": 85.4}, "why": "", "trade": ""}, {"name": "Nooze Nooze ก๋วยเตี๋ยวต้มยำ", "cat": "Noodle shop", "rating": 4.8, "revs": 514, "price": 100, "tier": "฿", "dist": 710, "noise": "Quiet", "sr": 23.6, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 3.0, "su": 6.6, "total": 72.2, "conf": 88, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม"], "cons": [], "scn": {"team": 72.2, "safe": 73.3, "budget": 78.5, "fast": 88.4, "talk": 77.3}, "why": "", "trade": ""}, {"name": "Salad Factory Soi Ari", "cat": "Salad shop", "rating": 4.5, "revs": 467, "price": 300, "tier": "฿฿", "dist": 371, "noise": "Quiet", "sr": 22.4, "sp": 15.0, "st": 12.0, "sc": 13.8, "sg": 3.0, "su": 5.8, "total": 72.0, "conf": 87, "risk": "low", "review": false, "pros": ["ราคาคุ้ม"], "cons": [], "scn": {"team": 72.0, "safe": 70.2, "budget": 70.0, "fast": 81.2, "talk": 75.2}, "why": "", "trade": ""}, {"name": "Hobs Ari Samosorn", "cat": "Restaurant", "rating": 4.4, "revs": 41, "price": 750, "tier": "฿฿฿", "dist": 1025, "noise": NaN, "sr": 19.5, "sp": 15.0, "st": 6.0, "sc": 15.0, "sg": 12.0, "su": 4.5, "total": 72.0, "conf": 74, "risk": "med", "review": true, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม", "ราคาสูง"], "scn": {"team": 72.0, "safe": 67.8, "budget": 63.4, "fast": 58.2, "talk": 65.8}, "why": "", "trade": ""}, {"name": "Miles Ari", "cat": "Restaurant", "rating": 4.4, "revs": 115, "price": 100, "tier": "฿", "dist": 727, "noise": "Quiet", "sr": 20.6, "sp": 15.0, "st": 9.0, "sc": 13.8, "sg": 12.0, "su": 1.3, "total": 71.6, "conf": 80, "risk": "med", "review": true, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "รับจอง"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม"], "scn": {"team": 71.6, "safe": 72.2, "budget": 85.0, "fast": 80.0, "talk": 85.8}, "why": "", "trade": ""}, {"name": "แซ่บสุดใจ อารีย์ - Sabsudjai Ari", "cat": "Restaurant", "rating": 4.8, "revs": 161, "price": 300, "tier": "฿฿", "dist": 947, "noise": NaN, "sr": 22.3, "sp": 15.0, "st": 9.0, "sc": 13.8, "sg": 9.0, "su": 2.5, "total": 71.6, "conf": 82, "risk": "med", "review": false, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": ["ไกล BTS"], "scn": {"team": 71.6, "safe": 74.3, "budget": 77.8, "fast": 78.1, "talk": 64.9}, "why": "", "trade": ""}, {"name": "คลั่งเนื้อ อารีย์ซอย 5 ( Klang Nuea )", "cat": "Restaurant", "rating": 4.9, "revs": 1150, "price": 400, "tier": "฿฿฿", "dist": 675, "noise": "Quiet", "sr": 24.6, "sp": 15.0, "st": 9.0, "sc": 13.8, "sg": 5.0, "su": 4.1, "total": 71.5, "conf": 92, "risk": "low", "review": false, "pros": ["เรตติ้งสูงมาก", "รีวิวเยอะ น่าเชื่อถือ", "รับจอง"], "cons": [], "scn": {"team": 71.5, "safe": 79.7, "budget": 71.1, "fast": 84.4, "talk": 80.6}, "why": "", "trade": ""}, {"name": "อร่อย อารีย์ Aroi Ari", "cat": "Thai restaurant", "rating": 4.6, "revs": 129, "price": 100, "tier": "฿", "dist": 769, "noise": "Quiet", "sr": 21.4, "sp": 15.0, "st": 9.0, "sc": 15.0, "sg": 8.0, "su": 3.1, "total": 71.5, "conf": 80, "risk": "med", "review": true, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "รับจอง"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม"], "scn": {"team": 71.5, "safe": 70.5, "budget": 82.2, "fast": 81.5, "talk": 82.2}, "why": "", "trade": ""}, {"name": "FEAST Ratchakru", "cat": "Restaurant", "rating": 4.4, "revs": 163, "price": 150, "tier": "฿฿", "dist": 335, "noise": NaN, "sr": 20.9, "sp": 15.0, "st": 12.0, "sc": 15.0, "sg": 7.0, "su": 1.3, "total": 71.2, "conf": 82, "risk": "med", "review": false, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม"], "cons": [], "scn": {"team": 71.2, "safe": 68.7, "budget": 78.4, "fast": 80.1, "talk": 59.6}, "why": "", "trade": ""}, {"name": "Mitt Restaurant & Space (Ari Branch)", "cat": "Restaurant", "rating": 4.4, "revs": 459, "price": 300, "tier": "฿฿", "dist": 1028, "noise": "Quiet", "sr": 22.1, "sp": 15.0, "st": 6.0, "sc": 15.0, "sg": 11.0, "su": 2.1, "total": 71.2, "conf": 87, "risk": "low", "review": false, "pros": ["ราคาคุ้ม", "รองรับกลุ่ม", "รับจอง"], "cons": ["ไกล BTS"], "scn": {"team": 71.2, "safe": 77.2, "budget": 77.4, "fast": 80.6, "talk": 84.5}, "why": "", "trade": ""}, {"name": "Banjong-ari", "cat": "Coffee shop", "rating": 5.0, "revs": 40, "price": 100, "tier": "฿", "dist": 1370, "noise": NaN, "sr": 21.5, "sp": 15.0, "st": 6.0, "sc": 15.0, "sg": 6.0, "su": 6.8, "total": 70.3, "conf": 74, "risk": "med", "review": true, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "รองรับกลุ่ม"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม", "ไกล BTS"], "scn": {"team": 70.3, "safe": 67.1, "budget": 82.7, "fast": 78.4, "talk": 62.5}, "why": "", "trade": ""}, {"name": "Sitting corner", "cat": "Restaurant", "rating": 5.0, "revs": 24, "price": 100, "tier": "฿", "dist": 266, "noise": "Quiet", "sr": 21.0, "sp": 15.0, "st": 15.0, "sc": 13.8, "sg": 2.0, "su": 3.3, "total": 70.0, "conf": 72, "risk": "med", "review": true, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม", "ใกล้ BTS มาก"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม"], "scn": {"team": 70.0, "safe": 61.0, "budget": 78.6, "fast": 76.3, "talk": 77.5}, "why": "", "trade": ""}, {"name": "Arina Bistro & Restaurant", "cat": "Restaurant", "rating": 4.1, "revs": 58, "price": 1000, "tier": "฿฿฿฿", "dist": 942, "noise": NaN, "sr": 18.8, "sp": 12.0, "st": 9.0, "sc": 13.8, "sg": 12.0, "su": 2.9, "total": 68.4, "conf": 76, "risk": "med", "review": true, "pros": ["รองรับกลุ่ม", "รับจอง"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม", "ราคาสูง"], "scn": {"team": 68.4, "safe": 66.6, "budget": 53.3, "fast": 51.5, "talk": 63.7}, "why": "", "trade": ""}, {"name": "Yuzu Ramen ゆずラーメン - Ari", "cat": "Restaurant", "rating": 4.7, "revs": 73, "price": 300, "tier": "฿฿", "dist": 559, "noise": NaN, "sr": 21.1, "sp": 15.0, "st": 12.0, "sc": 12.5, "sg": 2.0, "su": 2.5, "total": 65.1, "conf": 77, "risk": "med", "review": true, "pros": ["เรตติ้งสูงมาก", "ราคาคุ้ม"], "cons": ["รีวิวน้อย ตรวจสอบเพิ่ม"], "scn": {"team": 65.1, "safe": 63.0, "budget": 70.2, "fast": 74.2, "talk": 55.4}, "why": "", "trade": ""}], "asok": [], "siam": [], "thonglor": [], "phrompong": []};
+const AREA_TH = {ari:"อารีย์",asok:"อโศก",siam:"สยาม",thonglor:"ทองหล่อ",phrompong:"พร้อมพงษ์"};
+const SCN_TH = {team:"ทีม 8–12 คน",safe:"ปลอดภัยสุด",budget:"ประหยัด",fast:"รีบกิน",talk:"คุยงานได้"};
+let area="ari", scenario="team", sortK="total", asc=false;
+
+function cur(){return AREAS[area]||[];}
+function withRank(list,key){return [...list].map(d=>({...d})).sort((a,b)=>(b.scn[key]-a.scn[key])).map((d,i)=>({...d,_rk:i+1}));}
+
+function renderStats(){
+  const d=cur(); if(!d.length)return;
+  document.getElementById('s-count').textContent=d.length;
+  document.getElementById('s-price').textContent="฿"+Math.round(d.reduce((s,x)=>s+x.price,0)/d.length);
+  document.getElementById('s-top').textContent=Math.max(...d.map(x=>x.total)).toFixed(1);
+  document.getElementById('s-group').textContent=d.filter(x=>x.sg>=12).length;
+}
+function renderCards(){
+  const ranked=withRank(cur(),scenario).slice(0,3);
+  document.getElementById('cards').innerHTML=ranked.map(d=>{
+    const pros=d.pros.map(p=>`<span class="chip pro">+ ${p}</span>`).join('');
+    const cons=d.cons.map(c=>`<span class="chip con">– ${c}</span>`).join('');
+    const why=(scenario==='team'&&d.why)?`<p class="why"><b>ทำไม:</b> ${d.why}</p><p class="trade"><b>ข้อควรพิจารณา:</b> ${d.trade}</p>`:'';
+    const hr=d.review?`<span class="hr-flag">🚩 Human Review</span>`:'';
+    return `<article class="card"><div class="badge">★ TOP ${d._rk}</div>
+      <h3>${d.name}</h3><p class="cat">${d.cat}</p>
+      <div class="score"><span class="num">${d.scn[scenario].toFixed(1)}</span><span class="den">/ 100 · ${SCN_TH[scenario]}</span></div>
+      <ul class="stats"><li><b>${d.rating.toFixed(1)}</b><span>เรตติ้ง</span></li><li><b>${d.revs.toLocaleString()}</b><span>รีวิว</span></li><li><b>฿${d.price}</b><span>ต่อหัว</span></li><li><b>${d.dist}m</b><span>BTS</span></li></ul>
+      <div class="tagrow">${pros}${cons}</div>
+      <div class="flagrow"><span class="rdot ${d.risk}"></span>Risk: ${d.risk.toUpperCase()} · Confidence ${d.conf}% ${hr}</div>
+      ${why}</article>`;}).join('');
+}
+function renderTable(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const cf=document.getElementById('catf').value,pf=document.getElementById('pricef').value,rf=document.getElementById('riskf').value,hr=document.getElementById('hrf').checked;
+  const base=withRank(cur(),'team'); // table default rank by team total
+  let rows=base.filter(d=>d.name.toLowerCase().includes(q)&&(!cf||d.cat===cf)&&(!pf||d.tier===pf)&&(!rf||d.risk===rf)&&(!hr||d.review));
+  const mx=Math.max(...cur().map(d=>d.total));
+  rows.sort((a,b)=>{let x=a[sortK]??a._rk,y=b[sortK]??b._rk;if(sortK==='rank'){x=a._rk;y=b._rk;}if(typeof x==='string')return asc?x.localeCompare(y):y.localeCompare(x);return asc?x-y:y-x;});
+  document.getElementById('tb').innerHTML=rows.map(d=>{
+    const w=(d.total/mx*100).toFixed(0);
+    const flag=d._rk<=3?`<span class="topflag">TOP ${d._rk}</span>`:'';
+    const hrf=d.review?' 🚩':'';
+    return `<tr class="${d._rk<=3?'top':''}"><td class="rankcell">${d._rk}</td>
+      <td class="name">${d.name}${flag}${hrf}</td><td class="cat">${d.cat}</td>
+      <td>${d.rating.toFixed(1)}</td><td>${d.revs.toLocaleString()}</td><td><span class="pill">${d.tier}</span> ฿${d.price}</td>
+      <td>${d.dist}</td><td>${d.noise}</td><td class="confcell">${d.conf}%</td>
+      <td><span class="riskpill ${d.risk}">${d.risk.toUpperCase()}</span></td>
+      <td><div class="totbar"><div class="t"><div class="f" style="width:${w}%"></div></div><b>${d.total}</b></div></td></tr>`;}).join('');
+}
+function fillCats(){
+  const sel=document.getElementById('catf');sel.innerHTML='<option value="">ทุกประเภท</option>';
+  [...new Set(cur().map(d=>d.cat))].sort().forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+}
+function renderAll(){
+  const live=cur().length>0;
+  document.getElementById('livewrap').style.display=live?'block':'none';
+  document.getElementById('mockwrap').style.display=live?'none':'block';
+  const lb=document.getElementById('livebadge');lb.className='livebadge '+(live?'live':'mock');lb.textContent=live?'● LIVE DATA':'○ MOCK / no live data';
+  if(live){renderStats();fillCats();renderCards();renderTable();}
+}
+// area buttons
+document.querySelectorAll('.area').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.area').forEach(x=>x.classList.remove('on'));b.classList.add('on');area=b.dataset.a;renderAll();
+}));
+// scenario tabs
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));b.classList.add('on');scenario=b.dataset.s;renderCards();
+}));
+// table sort
+document.querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{const k=th.dataset.k;if(k===sortK)asc=!asc;else{sortK=k;asc=(k==='rank');}renderTable();}));
+['q','catf','pricef','riskf'].forEach(id=>document.getElementById(id).addEventListener('input',renderTable));
+document.getElementById('hrf').addEventListener('change',renderTable);
+
+/* ===== Grounded Ask Box ===== */
+const CUISINE={'ญี่ปุ่น':'japan','japanese':'japan','ซูชิ':'sushi','sushi':'sushi','ราเมง':'ramen','เกาหลี':'korea','korean':'korea','bbq':'bbq','ปิ้งย่าง':'bbq','ไทย':'thai','thai':'thai','อีสาน':'isan','ใต้':'southern','อิตา':'italian','พาสต้า':'italian','pizza':'pizza','พิซซ่า':'pizza','เบอร์เกอร์':'burger','burger':'burger','สเต๊ก':'steak','steak':'steak','ทะเล':'seafood','seafood':'seafood','ดิมซำ':'dimsum','dim sum':'dimsum','คาเฟ่':'cafe','cafe':'cafe','fusion':'fusion','ฟิวชั่น':'fusion','จีน':'chinese','chinese':'chinese','เม็กซิ':'mexican'};
+const CATMATCH={japan:['japan','sushi','izakaya','ramen','yakiniku','omakase'],sushi:['sushi','omakase'],ramen:['ramen','noodle'],korea:['korean'],bbq:['barbecue','bbq','yakiniku','grill'],thai:['thai'],isan:['isan','thai'],southern:['thai'],italian:['italian','pasta'],pizza:['pizza','italian'],burger:['burger','hamburger'],steak:['steak'],seafood:['seafood'],dimsum:['dim sum','dim'],cafe:['cafe','coffee'],fusion:['fusion'],chinese:['chinese'],mexican:['mexican']};
+function parseAsk(qraw){
+  const q=qraw.toLowerCase();
+  let maxPrice=null;const m=q.match(/(?:ไม่เกิน|งบ|under|<|≤)\s*([0-9]{2,4})/);if(m)maxPrice=+m[1];else{const m2=q.match(/([0-9]{2,4})\s*(?:บาท|\/?\s*คน|baht)/);if(m2)maxPrice=+m2[1];}
+  let group=null;const g=q.match(/([0-9]{1,2})\s*คน/);if(g)group=+g[1];
+  let cuisine=null;for(const k in CUISINE){if(q.includes(k)){cuisine=CUISINE[k];break;}}
+  let intent='team';
+  if(/เงียบ|คุยงาน|ประชุม|quiet|talk/.test(q))intent='talk';
+  else if(/เร็ว|รีบ|ด่วน|fast|quick/.test(q))intent='fast';
+  else if(/ถูก|ประหยัด|งบน้อย|cheap|budget/.test(q))intent='budget';
+  else if(/rating|เรตติ้ง|ดีที่สุด|ดีสุด|คะแนนสูง/.test(q))intent='rating';
+  else if(/รีวิวเยอะ|รีวิวมาก|น่าเชื่อ|popular|most review/.test(q))intent='reviews';
+  return {maxPrice,group,cuisine,intent};
+}
+function runAsk(qraw){
+  const d=cur();const p=parseAsk(qraw);let res=d.slice();
+  if(p.cuisine){const keys=CATMATCH[p.cuisine]||[p.cuisine];res=res.filter(x=>keys.some(k=>x.cat.toLowerCase().includes(k)));}
+  if(p.maxPrice)res=res.filter(x=>x.price<=p.maxPrice);
+  if(p.group&&p.group>=8)res=res.filter(x=>x.sg>=11);
+  let sortKey='total',label='เหมาะกับทีม';
+  if(p.intent==='rating'){res.sort((a,b)=>b.rating-a.rating||b.revs-a.revs);label='เรตติ้งสูงสุด';}
+  else if(p.intent==='reviews'){res.sort((a,b)=>b.revs-a.revs);label='รีวิวเยอะ/น่าเชื่อถือสุด';}
+  else if(p.intent==='budget'){res.sort((a,b)=>b.scn.budget-a.scn.budget);label='คุ้มราคาสุด';}
+  else if(p.intent==='fast'){res.sort((a,b)=>b.scn.fast-a.scn.fast);label='เหมาะกินเร็ว';}
+  else if(p.intent==='talk'){res.sort((a,b)=>b.scn.talk-a.scn.talk);label='เหมาะคุยงาน/เงียบ';}
+  else res.sort((a,b)=>b.scn.team-a.scn.team);
+  const top=res.slice(0,3);
+  const cond=[];if(p.cuisine)cond.push('ประเภท: '+p.cuisine);if(p.maxPrice)cond.push('งบ ≤฿'+p.maxPrice+'/คน');if(p.group)cond.push('กลุ่ม '+p.group+' คน');
+  const ans=document.getElementById('answer');ans.classList.add('show');
+  if(!top.length){ans.innerHTML=`<p class="a-lead">ไม่พบร้านที่ตรงเงื่อนไขใน dataset ย่าน${AREA_TH[area]}</p><p style="font-size:13px;color:var(--muted)">${cond.join(' · ')||'—'} — ลองผ่อนเงื่อนไข เช่น เพิ่มงบหรือเปลี่ยนประเภท</p>`;return;}
+  ans.innerHTML=`<p class="a-lead">จาก dataset ย่าน${AREA_TH[area]} (${cur().length} ร้าน) — ${label}${cond.length?' · '+cond.join(' · '):''}:</p><ol>`+
+    top.map(d=>`<li><b>${d.name}</b> (${d.cat}) — เรตติ้ง ${d.rating.toFixed(1)} (${d.revs.toLocaleString()} รีวิว), ฿${d.price}/คน, ${d.dist}m จาก BTS, คะแนนรวม ${d.total}/100${d.review?' · 🚩 รีวิวน้อย ควรตรวจสอบ':''}</li>`).join('')+
+    `</ol><p class="grounded">↑ คัดจากชุดข้อมูลที่ scrape มาเท่านั้น</p>`;
+}
+document.getElementById('askbtn').addEventListener('click',()=>{const v=document.getElementById('ask').value.trim();if(v)runAsk(v);});
+document.getElementById('ask').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=e.target.value.trim();if(v)runAsk(v);}});
+document.querySelectorAll('.samp').forEach(s=>s.addEventListener('click',()=>{document.getElementById('ask').value=s.textContent;runAsk(s.textContent);}));
+
+renderAll();
+</script>
+</body></html>
